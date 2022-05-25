@@ -171,3 +171,21 @@ Join PortfolioProject..CovidVaccinations VAC
 	on DEA.Location = VAC.Location 
 	and DEA.Date = VAC.Date
 where DEA.Continent is not null;
+
+
+--Rolling Death Count by Continent and / or Location
+
+With PopDeath(Contient, Location, Date, Population, New_Deaths, RollingDeaths)
+as
+(
+Select DEA.Contient, DEA.Location, DEA.Date, DEA.Population, DEA.New_Deaths,
+SUM(Cast(DEA.New_Deaths as int)) over (Partition by DEA.Location Order By DEA.Location, Cast(DEA.Date as datetime)) as RollingDeaths
+from PortfolioProject..CovidDeaths DEA
+Join PortfolioProject..CovidVaccinations VAC
+	on DEA.Location = VAC.Location 
+	and DEA.Date = VAC.Date
+where DEA.Continent like '%United Sta%'
+--and DEA.Continent like '%North%'
+)
+Select *
+From PopDeath;
